@@ -1,57 +1,58 @@
+#include <vector>
+#include <random>
+#include <algorithm>
 #include"rbt.h"
 
 int main()
 {
-    IPH_Redblack_node node(2);
-    IPH_Redblack_tree T;
+    int n = 10;
 
-    check_delete( T);
-    for(int i = 0; i < 2048*8; ++i)
-    {
-        T.Iph_insert(i);
-        IPH_Redblack_node * p  =T.Iph_find(i);
-        if(p->key != i) {
-            cout<<"error find"<<endl;
-        }
-        /* code */
-        //	cout<<T.root.left->key<<endl;
-        if(!IPH_Check(T.root.left,i+1))
+    std::mt19937 generator;
+    generator.seed(std::random_device()());
+    std::uniform_int_distribution<std::mt19937::result_type> distribution(0,n-1);
+
+
+    vector<bool> bool_vec(n,true);
+    vector<int> vec;
+    vector<int> re_vec;
+    int count =0;
+    IPH_Redblack_tree T;
+    IPH_Redblack_node *p;
+    int re = 0;
+        while(count != n)
         {
-            cout<<"\n\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\"<<endl;
-            printT(T.root.left,0);
-            cout<<"error in  i = "<<i<<endl;
-            cout<<"\n\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\"<<endl;
-            return 0;
-        }else{
-            //  printT(T.root.left,0);
-            //	cout<<"check pass "<<height<<endl;
-        }
-    }
-    for(int i = 0;i<2048*8;i++)
-    {
-        IPH_Redblack_node * p  =T.Iph_find(i);
-        if(i < 2048*8 - 1)
-        {
-            int x = p->successor()->key;
-            if( x!= i+1)
+         int dice_roll = distribution(generator);
+         if(bool_vec[dice_roll])
             {
-                cout<<"error successor x  = "<<x<<"i = "<<i<<endl;
-                x = p->successor()->key;
+                count++;
+                vec.push_back(dice_roll);
+                bool_vec[dice_roll] = false;
             }
         }
-        if(i > 0)
+
+        for(int i = 0;i<n;i++)
         {
-            int x = p->predecessor()->key;
-            if( x!= i-1)
-            {
-                cout<<"error predecessor x  = "<<x<<"i = "<<i<<endl;
-                x = p->successor()->key;
-            }
+            p = T.Iph_insert(vec[i],0);
         }
-        if(p->key != i) {
-            cout<<"error find 2"<<endl;
+        int key = T.root.data_max_key;
+        cout<<"data_max_key=  "<<key<<endl;
+        p = T.Iph_find(key);
+        while(p)
+        {
+            re_vec.push_back(p->key);
+            p = T.Iph_find(p->prev);
         }
-    }
+        reverse(re_vec.begin(),re_vec.end());
+        for(int i = 0;i<n;i++)
+            cout<<vec[i]<<" ";
+        cout<<endl;
+        for(int i = 0;i<re_vec.size();i++)
+            cout<<re_vec[i]<<" ";
+        cout<<" \n data max = "<<T.root.data_max<<endl;
+
+    
+
+
     return 0;
     
 }
