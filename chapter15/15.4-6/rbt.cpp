@@ -1,3 +1,4 @@
+#include <algorithm>
 #include "rbt.h"
 void replace_node(struct IPH_Redblack_node* n, struct IPH_Redblack_node* child){
     child->parent = n->parent;
@@ -152,6 +153,8 @@ void IPH_Redblack_node::rotate_right()
     }
     update_count(this);
     update_count(this->parent);
+    update_max(this);
+    update_max(this->parent);
 }
 
 
@@ -181,6 +184,8 @@ void IPH_Redblack_node::rotate_left()
 
     update_count(this);
     update_count(this->parent);
+    update_max(this);
+    update_max(this->parent);
 }
 
 
@@ -188,8 +193,8 @@ IPH_Redblack_node * IPH_Redblack_tree::Iph_find(int index)
 {
     if(root.left == 0)
         return 0;
-    if(index >= _count){
-        cout<<"error Iph_find"<<endl;
+    if(index >= _count || index < 0){
+      //  cout<<"error Iph_find"<<endl;
         return 0;
     }
     return root.left->find(index);
@@ -250,11 +255,14 @@ void printT(IPH_Redblack_node *n,int a)
     cout<<endl;
 }
 
-void IPH_Redblack_tree::Iph_insert(int key,int d)
+IPH_Redblack_node * IPH_Redblack_tree::Iph_insert(int key,int d)
 {
     _count++;
     IPH_Redblack_node *p = new IPH_Redblack_node(key,d);
     IPH_Redblack_node *parent = &this->root;
+    int data = 0;
+    int data_max_key = key;
+    int prev = -1;
     while(1)
     {
         parent->count++;
@@ -268,6 +276,20 @@ void IPH_Redblack_tree::Iph_insert(int key,int d)
             }
             parent = parent->left;
         }else{
+        	if(parent->data > data)
+        	{
+        		data = parent->data;
+        		prev = parent->key;
+        	}
+        	if(parent->left)
+        	{
+        		if(parent->left->data_max > data)
+        		{
+        			data = parent->left->data_max;
+        			prev = parent->left->data_max_key;
+        		}
+        	}
+
             if(parent->right == 0){
                 parent->right = p;
                 p->parent = parent;
@@ -277,13 +299,42 @@ void IPH_Redblack_tree::Iph_insert(int key,int d)
             parent = parent->right;
         }
     }
+
+    p->data = p->data_max = data+1;
+    p->prev = prev;
+    p->data_max_key = data_max_key;
+
+    parent = p->parent;
+    while(parent){
+    	update_max(parent);
+    	parent= parent->parent;
+    }
     Iph_repair(p);
+    return p;
+}
+void update_max(IPH_Redblack_node *p)
+{
+	int data_max = p->data;
+	int data_max_key = p->key;
+	if(p->left && p->left->data_max > data_max){
+		data_max = p->left->data_max;
+		data_max_key = p->left->data_max_key;
+	} 
+
+	if(p->right && p->right->data_max > data_max)
+	{
+		data_max = p->right->data_max;
+		data_max_key = p->right->data_max_key;
+	} 
+	p->data_max = data_max;
+	p->data_max_key = data_max_key;
 }
 void IPH_Redblack_tree::Iph_insert(int key)
 {
     _count++;
     IPH_Redblack_node *p = new IPH_Redblack_node(key);
     IPH_Redblack_node *parent = &this->root;
+    int data = 0;
     while(1)
     {
         parent->count++;
